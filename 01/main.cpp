@@ -19,23 +19,7 @@ int find(int left, int right, const std::vector<int> &primeNums, const int Data[
     if( ( right != *(ri-1)) ) return 0;
   
     int cnt(0);
- /*
-   for(auto a=li;a!=ri;++a)
-   {
-     //  if(!flags[a-li])
-       {
-        auto el = std::lower_bound(primeNums.begin(), primeNums.end(), *a);
-        if(*el==*a)
-        {
-       //     flags[a-li] = true;
-                ++cnt;
-        }
-       }
-       //std::cout <<*a <<std::endl;
-   }
-   */
-    
-   
+
     auto ll=std::lower_bound(primeNums.begin(), primeNums.end(), left);
     auto rr=std::upper_bound(primeNums.begin(), primeNums.end(), right);
     //search for each prime number in the part of the array and count
