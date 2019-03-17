@@ -39,7 +39,7 @@ std::vector<int> genPrime(int MAXN)
     std::vector<int> primeNums;
     
     //optimization: there are 9592 prime numbers from 0 to 99991
-    if(MAXN>=99991) primeNums.reserve(9592);
+    if(MAXN >= 99991) primeNums.reserve(9592);
 
     //special cases:
     if(MAXN < 2) return primeNums;
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
     //generate prime numbers table
     std::vector<int> primeNums(genPrime(MAXN));
 
-   // read args
+    //read args
     for (int i = 1; i < argc - 1; i += 2)
     {
         int left = std::atoi(argv[i]);
