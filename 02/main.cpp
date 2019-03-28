@@ -26,13 +26,13 @@ class Calc
             return processPlusOperand(preprocess(s));   
         }
     private:
-        static  int64_t processMultiplyOperand(std::string s, bool div=false)
+        static  int64_t processMultiplyOperand(const std::string &s, bool div=false)
         {
            
-           return processPlusOperand(s);
+           return processPlusOperand(s); 
  
         }
-        static int64_t processPlusOperand(std::string s)
+        static int64_t processPlusOperand(const std::string &s)
         {
             
             if(s.length()==0) return 0;
