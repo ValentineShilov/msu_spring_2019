@@ -175,7 +175,7 @@ int main(int argc, char *argv[] )
             return 1;
         }
         std::string s(argv[1]);
-        std::cout <<  Calc::calculate(s);
+        std::cout <<  Calc::calculate(s); 
     }
     catch (std::exception &e)
     {
