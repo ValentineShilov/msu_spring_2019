@@ -54,12 +54,12 @@ class Calc
             //no pluses left
             for(size_t i = 0; i < s.length(); i++)
             {
-                if(s[i]=='*')
+                if(s[i] == '*')
                 {
                     std::pair<std::string, std::string > p(split(s, i));
                     return processMultiplyOperand(p.first) *  processMultiplyOperand(p.second);
                 }
-                if(s[i]=='/')
+                if(s[i] == '/')
                 {
                     std::pair<std::string, std::string > p(split(s, i));
                     
@@ -81,7 +81,7 @@ class Calc
                 }
 
             }
-            if(digitBuffer.length()==0) return 0;
+            if(digitBuffer.length() == 0) return 0;
             int64_t rv(strToInt64(digitBuffer));
 
             return rv;
@@ -110,9 +110,9 @@ class Calc
             for(size_t i=0; i<(s.length());++i)
             {
                 if(i<pos)
-                    l+=s[i];
+                    l += s[i];
                 else if(i>pos)
-                    r+=s[i];
+                    r += s[i];
 
             }
             return std::make_pair(l,r);
@@ -120,31 +120,31 @@ class Calc
         static std::string preprocess(const std::string &s)
         {
             std::string rv;
-            bool MinusFlag=false;
-            for(size_t i=0;i<s.length();++i)
+            bool MinusFlag(false);
+            for(size_t i = 0; i < s.length(); ++i)
             {
-                if(s[i]!=' ')
+                if(s[i] != ' ')
                 {
                     
                     if(MinusFlag) 
-                        if(s[i]=='-')
+                        if(s[i] == '-')
                         {
-                            rv+='+';
+                            rv += '+';
                             MinusFlag = false;
                         } 
                         else
                         {
-                            rv+='-';
-                            rv+=s[i];
+                            rv += '-';
+                            rv += s[i];
                             
                             MinusFlag = false;
                         } 
-                    else if(s[i]=='-') MinusFlag = true;
+                    else if(s[i] == '-') MinusFlag = true;
                     else 
                     {  
                         if(! (isdigit(s[i]) || s[i]=='+' || s[i]=='-' || s[i]=='/'|| s[i]=='*'))
                             throw(calcException());
-                        rv+=s[i];
+                        rv += s[i];
                     }
                 }
             }
@@ -153,7 +153,7 @@ class Calc
         }
         static int64_t strToInt64(const std::string &s)
         {
-            if(s.length()==0) return 0;
+            if(s.length() == 0) return 0;
             int64_t rv;
             std::stringstream ss(s);
             ss >> rv;
@@ -169,7 +169,7 @@ int main(int argc, char *argv[] )
 {
     try
     {
-        if(argc!=2)
+        if(argc != 2)
         {
             std::cout <<"error";
             return 1;
@@ -179,8 +179,8 @@ int main(int argc, char *argv[] )
     }
     catch (std::exception &e)
     {
-        std::cout <<e.what();
-        return 1;
+        std::cout << e.what();
+        return 1; 
     }
     
     return 0;
