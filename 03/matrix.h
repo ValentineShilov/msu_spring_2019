@@ -100,7 +100,7 @@ class Matrix
 
 		}
 
-		bool operator!=(Matrix& m) const 
+		bool operator!=(const Matrix& m) const 
 		{ 
 			return !(m == *this); 
 		}
@@ -133,11 +133,14 @@ class Matrix
 
 		~Matrix() 
 		{
-			for (size_t i = 0; i < rows; i++) 
+			if(rows>0 && cols>0)
 			{
-				delete[] data[i];
+				for (size_t i = 0; i < rows; i++) 
+				{
+					delete[] data[i];
+				}
+				delete[] data;
 			}
-			delete[] data;
 		}
 	
 
