@@ -1,8 +1,8 @@
+//Valentine Shilov
 #include <thread>
 #include <condition_variable>
 #include <iostream>
 #include <mutex>
-
 
 void thread1(std::condition_variable &c, bool &state, std::mutex &m, int N) // thread 1
 {
@@ -19,7 +19,6 @@ void thread1(std::condition_variable &c, bool &state, std::mutex &m, int N) // t
 
 void thread2(std::condition_variable &c, bool &state, std::mutex &m, int N) // thread 2
 {
-    
     std::unique_lock<std::mutex> lock(m);
 
     for(int i=0;i<N;++i)
@@ -30,7 +29,6 @@ void thread2(std::condition_variable &c, bool &state, std::mutex &m, int N) // t
         state=!state;
         c.notify_one();
     }
- 
 }
 
 int main()
