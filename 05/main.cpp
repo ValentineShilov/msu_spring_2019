@@ -7,12 +7,12 @@
 void thread1(std::condition_variable &c, bool &state, std::mutex &m, int N) // thread 1
 {
     std::unique_lock<std::mutex> lock(m);
-    for(int i=0;i<N;++i)
+    for(int i = 0; i < N; ++i)
     {
         while(!state)
             c.wait(lock);
-        std::cout <<"ping" <<std::endl;   //<<i <<std::endl;
-        state=!state;
+        std::cout << "ping" << std::endl;   //<<i <<std::endl;
+        state = !state;
         c.notify_one();
     }
 }
@@ -21,12 +21,12 @@ void thread2(std::condition_variable &c, bool &state, std::mutex &m, int N) // t
 {
     std::unique_lock<std::mutex> lock(m);
 
-    for(int i=0;i<N;++i)
+    for(int i = 0; i < N; ++i)
     {
         while(state)
              c.wait(lock);
-        std::cout <<"pong" <<std::endl; // <<i  <<std::endl;
-        state=!state;
+        std::cout << "pong" << std::endl; // <<i  <<std::endl;
+        state = !state;
         c.notify_one();
     }
 }
