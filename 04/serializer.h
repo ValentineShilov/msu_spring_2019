@@ -28,19 +28,19 @@ public:
     }
 
     template <typename... ArgsT>
-    Error operator()(ArgsT... args)
+    Error operator()(ArgsT &&... args)
     {
-        return process(args...);
+        return process(std::forward<ArgsT>(args)...);
     }
     
 
-    Error save(uint64_t &v) 
+    Error save(uint64_t v) 
     {
         out << v << Separator;
         return out ? Error::NoError : Error::CorruptedArchive;
     }
 
-    Error save(bool &v) 
+    Error save(bool v) 
     {
         out << (v ? "true" : "false") << Separator;
         return out ? Error::NoError : Error::CorruptedArchive;
@@ -50,7 +50,7 @@ private:
     template<typename T, typename... ArgsT>
     Error process(T &&v, ArgsT &&... args) 
     {
-        Error e(save(v));
+        Error e(save(std::forward<T>(v)));
         if (e == Error::CorruptedArchive)
             return e;
         else
@@ -80,7 +80,7 @@ public:
     template <class... ArgsT>
     Error operator()(ArgsT &&... args)
     {
-        return process(args...);
+        return process(std::forward<ArgsT>(args)...);
     }
 
     template<typename T>
@@ -99,7 +99,7 @@ private:
     template<typename T, typename... ArgsT>
     Error process(T &&v, ArgsT &&... args) 
     {
-        Error e(load(v));
+        Error e(load(std::forward<T>(v)));
         if (e == Error::CorruptedArchive)
         {
             return Error::CorruptedArchive;
