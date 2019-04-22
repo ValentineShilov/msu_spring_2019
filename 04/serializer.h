@@ -60,7 +60,7 @@ private:
     template<typename T>
     Error process(T &&v) 
     {
-        return save(v);
+        return save(std::forward<T>(v));
     }
 
 };
@@ -83,7 +83,7 @@ public:
         return process(std::forward<ArgsT>(args)...);
     }
 
-    template<typename T>
+    template<typename T> 
     Error load(T &v) 
     {
         return v.serialize(*this);
@@ -93,7 +93,7 @@ private:
     template<typename T>
     Error process(T &&v) 
     {
-        return load(v);
+        return load(std::forward<T>(v));
     }
 
     template<typename T, typename... ArgsT>
