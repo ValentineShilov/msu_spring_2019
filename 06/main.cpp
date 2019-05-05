@@ -88,12 +88,15 @@ void merge(const char *fn1, const char *fn2, const char *outn)
     remove(fn1);
     remove(fn2);
 } 
-void recursiveMergeSort(const std::pair< size_t, size_t> a,  const char* filename, size_t depth, const std::string &out)
+//all args except filename must be copied because this function can be called as another thread
+//and it's not guaranteed that they will still exist
+//filename must exist always :)
+void recursiveMergeSort(std::pair< size_t, size_t> a, const char* filename, size_t depth, std::string out)
 {
     auto len(a.second - a.first);
     //std::cout << "recursiveMergeSort " <<a.first << " " <<  a.second  <<" "  << filename <<std::endl;
     if(len > BUFFER_SIZE)
-    {
+    { 
         auto p1(a);
         auto p2(a);
         p1.second = p1.second - len/2;
@@ -144,58 +147,65 @@ void mergeSort(const char* filename, size_t nthreads=2)
     std::vector< std::pair<size_t, size_t> > blocks;
     std::vector< std::thread > threads;
     mkdir("w", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    if(f)
+    if(!f)
     {
-        f.seekg( 0, std::ios::end);
-        size_t fsize(f.tellg());
-        //std::cout <<"fsize: " <<fsize <<" "  << filename << std::endl;
-        f.seekg(0, std::ios::beg);
-        auto bs(fsize/nthreads);
-        size_t i;
-        if(fsize % sizeof(uint64_t) != 0)
-        {
-            throw(std::runtime_error("Invalid input file!!!"));
-        }
-        for(i = 0; i < nthreads - 1; ++i)
-        {
-            
-            blocks.push_back(std::make_pair(bs * i / sizeof(uint64_t), bs * (i + 1)/ sizeof(uint64_t)));
-        }
-        blocks.push_back(std::make_pair(bs * (i) / sizeof(uint64_t), fsize / sizeof(uint64_t)));
+         throw(std::runtime_error("Error"));
+    }
+    f.seekg( 0, std::ios::end);
+    size_t fsize(f.tellg());
+    //std::cout <<"fsize: " <<fsize <<" "  << filename << std::endl;
+    f.seekg(0, std::ios::beg);
+    auto bs(fsize/nthreads);
+    size_t i;
+    if(fsize % sizeof(uint64_t) != 0)
+    {
+        throw(std::runtime_error("Invalid input file!!!"));
+    }
+    for(i = 0; i < nthreads - 1; ++i)
+    {
         
-        size_t j(0);
-        std::vector<std::string> res_files;
-        for(auto p : blocks)
-        {
-            std::stringstream o1;
-            o1 << "w/of_"  << 0 <<"_" << "a" <<".." <<j <<".tmp";
-            res_files.push_back(o1.str());
-            threads.push_back( std::move(std::thread(recursiveMergeSort, p, filename, 0, o1.str())));
- 
-            j++;
-        }
-        for(auto i = threads.begin(); i != threads.end(); ++i)
-        {
-            if(i->joinable())
-                i->join();
-        }
+        blocks.emplace_back(bs * i / sizeof(uint64_t), bs * (i + 1)/ sizeof(uint64_t));
+    }
+    blocks.emplace_back(bs * (i) / sizeof(uint64_t), fsize / sizeof(uint64_t));
+    
+    size_t j(0);
+    std::vector<std::string> res_files;
+    for(auto &&p : blocks)
+    {
+        std::stringstream o1;
+        o1 << "w/of_"  << 0 <<"_" << "a" <<".." <<j <<".tmp";
+        res_files.push_back(o1.str());
+        threads.emplace_back(recursiveMergeSort, p, filename, 0, o1.str());
 
-        //final merge
-        std::string final_out("result.dat");
-        remove(final_out.c_str());
-        std::string final_tmp(final_out + ".tmp");
-        remove(final_tmp.c_str());
-        for(auto rf : res_files)
+        j++;
+    }
+    for(auto &&thread : threads)
+    {
+        if(thread.joinable())
+            thread.join();
+    }
+
+    //final merge
+    std::string final_out("result.dat");
+    remove(final_out.c_str());
+    std::string final_tmp(final_out + ".tmp");
+    remove(final_tmp.c_str());
+    bool flag(true);
+    for(auto &&rf : res_files)
+    {
+        if(!flag)
         {
             rename(final_out.c_str(), final_tmp.c_str());
             merge(rf.c_str(), final_tmp.c_str(), final_out.c_str());
             remove(final_tmp.c_str());
         }
+        else
+        {
+            rename(rf.c_str(), final_out.c_str());
+            flag = false;
+        }
     }
-    else
-    {
-        throw(std::runtime_error("Error"));
-    }
+  
 }
 int main()
 {
