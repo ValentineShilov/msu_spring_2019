@@ -93,52 +93,71 @@ void merge(const char *fn1, const char *fn2, const char *outn)
 //filename must exist always :)
 void recursiveMergeSort(std::pair< size_t, size_t> a, const char* filename, size_t depth, std::string out)
 {
-    auto len(a.second - a.first);
-    //std::cout << "recursiveMergeSort " <<a.first << " " <<  a.second  <<" "  << filename <<std::endl;
-    if(len > BUFFER_SIZE)
-    { 
-        auto p1(a);
-        auto p2(a);
-        p1.second = p1.second - len/2;
-        p2.first = p1.second;
-        //std::string out1, out2; 
-        std::stringstream o1, o2;
-        o1 << "w/o1_"  << depth <<"_" << a.first <<".tmp";
-        o2 << "w/o2_"  << depth <<"_" << a.first <<".tmp";
-        
-        recursiveMergeSort(p1,  filename, depth + 1, o1.str());
-        recursiveMergeSort(p2,  filename, depth + 1, o2.str());
-        
-        merge(o1.str().c_str(), o2.str().c_str(), out.c_str());
-    }
-    if(len <= BUFFER_SIZE)
+    try
     {
-        std::array<uint64_t, BUFFER_SIZE> arr;
-        std::ifstream f(filename, std::ios::in | std::ios::binary);
-        if(!f)
-            throw(std::runtime_error("Error"));
-        f.seekg(a.first*sizeof(uint64_t), std::ios::beg);
-        if(f)
+        auto len(a.second - a.first);
+       
+        //std::cout << "recursiveMergeSort " <<a.first << " " <<  a.second  <<" "  << filename <<std::endl;
+        if(len > BUFFER_SIZE)
+        { 
+            auto p1(a);
+            auto p2(a);
+            p1.second = p1.second - len/2;
+            p2.first = p1.second;
+            //std::string out1, out2; 
+            std::stringstream o1, o2;
+            o1 << "w/o1_"  << depth <<"_" << a.first <<".tmp";
+            o2 << "w/o2_"  << depth <<"_" << a.first <<".tmp";
+            
+            recursiveMergeSort(p1,  filename, depth + 1, o1.str());
+            recursiveMergeSort(p2,  filename, depth + 1, o2.str());
+            
+            merge(o1.str().c_str(), o2.str().c_str(), out.c_str());
+        }
+        if(len <= BUFFER_SIZE)
         {
-            bool ff = !f.read(reinterpret_cast<char*>(arr.begin()), sizeof(uint64_t) * (len) ).eof();
-           
-            std::sort(arr.begin(), arr.begin() + len);
-            std::ofstream of(out.c_str(), std::ios::out | std::ios::binary);
+            std::array<uint64_t, BUFFER_SIZE> arr;
+            std::ifstream f(filename, std::ios::in | std::ios::binary);
+            if(!f)
+                throw(std::runtime_error("Error"));
+            f.seekg(a.first*sizeof(uint64_t), std::ios::beg);
+            if(f)
+            {
+                bool ff = !f.read(reinterpret_cast<char*>(arr.begin()), sizeof(uint64_t) * (len) ).eof();
             
-            of.write(reinterpret_cast<char*>(arr.begin()), sizeof(uint64_t)* (len));
-            of.close();
+                std::sort(arr.begin(), arr.begin() + len);
+                std::ofstream of(out.c_str(), std::ios::out | std::ios::binary);
+                
+                of.write(reinterpret_cast<char*>(arr.begin()), sizeof(uint64_t)* (len));
+                of.close();
+                
+                f.close();
+            }
+            else
+            {
+                std::cout <<"fopen failed: " << filename << std::endl;
+                throw(std::runtime_error("Invalid input file!!!"));
+            }
             
-            f.close();
+            
+        }
+    }
+    catch(const std::exception &e)
+    {
+        if(depth==0)
+        {
+            std::cerr << e.what();
+            std::cerr <<"Sort failed" <<std::endl;
+            remove(out.c_str());
+            return;
         }
         else
         {
-            std::cout <<"fopen failed: " << filename << std::endl;
-            throw(std::runtime_error("Invalid input file!!!"));
+            std::cerr << "Exception in RecursiveMergeSort, depth: " << depth << std::endl;
+            remove(out.c_str());
+            throw; //forward exception
         }
-        
-        
     }
-    
 }
 
 void mergeSort(const char* filename, size_t nthreads=2)
@@ -195,13 +214,17 @@ void mergeSort(const char* filename, size_t nthreads=2)
     {
         if(!flag)
         {
-            rename(final_out.c_str(), final_tmp.c_str());
+            if(rename(final_out.c_str(), final_tmp.c_str())!=0)
+                throw(std::runtime_error("File for final merge not found, sort failed!!!"));
             merge(rf.c_str(), final_tmp.c_str(), final_out.c_str());
             remove(final_tmp.c_str());
         }
         else
         {
-            rename(rf.c_str(), final_out.c_str());
+            if(rename(rf.c_str(), final_out.c_str())!=0)
+            {
+                throw(std::runtime_error("File for final merge not found, sort failed!!!"));
+            }
             flag = false;
         }
     }
@@ -210,6 +233,14 @@ void mergeSort(const char* filename, size_t nthreads=2)
 int main()
 {
     //genFile("in.dat", 10500000);
-    mergeSort("in.dat", 4);
+    try 
+    {
+         mergeSort("in.dat", 4);
+    }
+    catch(const std::exception &e)
+    {
+        std::cerr <<"Sort failed" <<std::endl;
+        std::cerr << e.what()  <<std::endl;;
+    }
     return 0;
 }
